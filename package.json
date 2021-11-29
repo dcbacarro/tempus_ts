@@ -9,12 +9,6 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "release": "electron-forge publish",
-    "package-linux": "electron-forge package --platform=linux",
-    "make-linux": "electron-forge make --platform=linux",
-    "release-linux": "electron-forge publish --platform=linux",
-    "package-win": "electron-forge package --platform=win32",
-    "make-win": "electron-forge make --platform=win32",
-    "release-win": "electron-forge publish --platform=win32",
     "lint": "eslint . --ext js,ts",
     "test": "jest"
   },
@@ -84,7 +78,7 @@
     "forge": {
       "packagerConfig": {
         "name": "Tempus",
-        "executableName": "Tempus",
+        "executableName": "tempus",
         "icon": "assets/icon",
         "extraResource": [
           "assets"

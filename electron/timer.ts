@@ -57,7 +57,7 @@ class Timer {
     const start = dayjs(fromTime * 1000);
 
     if (reset) {
-      store.set('lastSyncTimestamp', toTime);
+      store.set('lastSyncTimestamp', toTime + 1);
       store.set('activityCounter', 0);
       screenshot = await takeScreenshot();
     }
@@ -76,7 +76,6 @@ class Timer {
       screenshot,
     };
 
-    console.log(payload);
     return payload;
   }
 

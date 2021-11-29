@@ -133,7 +133,7 @@ export const updateTimesheet = async (timesheet: string, activity: any, screensh
   const file_url = await syncScreenshot(timesheet, activity.from_time, screenshot);
   activity.screenshot = file_url;
 
-  const resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
+  let resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
     method: 'PUT',
     headers: {
       Accept: 'application/json',
@@ -143,6 +143,20 @@ export const updateTimesheet = async (timesheet: string, activity: any, screensh
       time_logs: [...time_logs, activity],
     }),
   });
+
+  if (resp.status === 417) {
+    activity.from_time = dayjs(activity.from_time).add(1, 'second').format('YYYY-MM-DD HH:mm:ss');
+    resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        time_logs: [...time_logs, activity],
+      }),
+    });
+  }
 
   return resp.status === 200;
 };
