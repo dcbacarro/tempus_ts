@@ -1,23 +1,37 @@
 {
-  "name": "electron-react-typescript",
-  "author": "Diego Fernandes <diego.schell.f@gmail.com>",
-  "version": "2.0.0",
-  "description": "An Electron boilerplate including TypeScript, React, Jest and ESLint.",
+  "name": "tempus",
+  "author": "Darrell Bacarro <dcbacarro@codedisruptors.com>",
+  "version": "1.0.0",
+  "description": "CDI Time Tracker",
   "main": "./.webpack/main/index.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "release": "electron-forge publish",
+    "package-linux": "electron-forge package --platform=linux",
+    "make-linux": "electron-forge make --platform=linux",
+    "release-linux": "electron-forge publish --platform=linux",
+    "package-win": "electron-forge package --platform=win32",
+    "make-win": "electron-forge make --platform=win32",
+    "release-win": "electron-forge publish --platform=win32",
     "lint": "eslint . --ext js,ts",
     "test": "jest"
   },
   "keywords": [],
   "license": "MIT",
   "dependencies": {
+    "dayjs": "^1.10.7",
+    "driftless": "^2.0.3",
+    "electron-main-fetch": "^1.0.0",
+    "electron-store": "^8.0.1",
+    "lottie-react": "^2.1.0",
+    "node-cron": "^3.0.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-hot-loader": "4.13.0",
+    "react-router-dom": "^6.0.2",
+    "react-simple-snackbar": "^1.1.11",
     "styled-components": "5.3.0"
   },
   "devDependencies": {
@@ -28,15 +42,19 @@
     "@babel/preset-typescript": "7.14.5",
     "@electron-forge/cli": "6.0.0-beta.57",
     "@electron-forge/maker-deb": "6.0.0-beta.57",
+    "@electron-forge/maker-dmg": "^6.0.0-beta.61",
     "@electron-forge/maker-rpm": "6.0.0-beta.57",
     "@electron-forge/maker-squirrel": "6.0.0-beta.57",
+    "@electron-forge/maker-wix": "^6.0.0-beta.61",
     "@electron-forge/maker-zip": "6.0.0-beta.57",
     "@electron-forge/plugin-webpack": "6.0.0-beta.57",
     "@marshallofsound/webpack-asset-relocator-loader": "0.5.0",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.7",
+    "@types/driftless": "^2.0.1",
     "@types/electron-devtools-installer": "2.2.0",
     "@types/jest": "26.0.23",
+    "@types/node-cron": "^3.0.0",
     "@types/react": "17.0.11",
     "@types/react-dom": "17.0.8",
     "@types/styled-components": "5.1.10",
@@ -65,8 +83,8 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "name": "Electron starter",
-        "executableName": "electron-starter",
+        "name": "Tempus",
+        "executableName": "Tempus",
         "icon": "assets/icon",
         "extraResource": [
           "assets"
@@ -83,7 +101,7 @@
                 {
                   "html": "./public/index.html",
                   "js": "./src/index.tsx",
-                  "name": "main_window",
+                  "name": "app",
                   "preload": {
                     "js": "./electron/bridge.ts"
                   }
@@ -97,21 +115,17 @@
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
-            "name": "Electron Starter"
+            "name": "Tempus"
           }
         },
         {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
+          "name": "@electron-forge/maker-dmg",
+          "config": {
+            "format": "ULFO"
+          }
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
           "config": {}
         }
       ]
