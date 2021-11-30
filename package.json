@@ -43,6 +43,7 @@
     "@electron-forge/maker-wix": "^6.0.0-beta.61",
     "@electron-forge/maker-zip": "6.0.0-beta.57",
     "@electron-forge/plugin-webpack": "6.0.0-beta.57",
+    "@electron-forge/publisher-github": "^6.0.0-beta.61",
     "@marshallofsound/webpack-asset-relocator-loader": "0.5.0",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.7",
@@ -86,6 +87,18 @@
           "assets"
         ]
       },
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "dcbacarro",
+              "name": "tempus_ts"
+            },
+            "draft": true
+          }
+        }
+      ],
       "plugins": [
         [
           "@electron-forge/plugin-webpack",
