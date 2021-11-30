@@ -1,9 +1,10 @@
 import { app, BrowserWindow, ipcMain, powerMonitor } from 'electron';
 import Timer from './timer';
-import store from './store';
+import store, { cleanUp } from './store';
 import TempusTray from './tray';
 import { toTime } from '../src/utils/helpers';
 import cron from 'node-cron';
+import path from 'path';
 
 let mainWindow: BrowserWindow | null
 let tray: TempusTray | null;
@@ -29,10 +30,9 @@ const monitor = async (checkIdle = true) => {
     } else {
       store.set('idleCounter', idleTime);
     }
-    
+
     if (time % 600 === 0) timer?.analyzeActivity();
   }
-
 
   const t = toTime(time);
 
@@ -49,10 +49,10 @@ const tryResume = () => {
     mainWindow?.webContents.send('try-resume', employee.name);
 }
 
-// const assetsPath =
-//   process.env.NODE_ENV === 'production'
-//     ? process.resourcesPath
-//     : app.getAppPath()
+const assetsPath =
+  process.env.NODE_ENV === 'production'
+    ? process.resourcesPath
+    : app.getAppPath()
 
 const setQuit = (toQuit: boolean) => {
   isQuitting = toQuit;
@@ -60,7 +60,7 @@ const setQuit = (toQuit: boolean) => {
 
 function createWindow () {
   mainWindow = new BrowserWindow({
-    // icon: path.join(assetsPath, 'assets', 'icon.png'),
+    icon: path.join(assetsPath, 'assets', 'icon.png'),
     width: 300,
     height: 310,
     backgroundColor: '#191622',
@@ -104,21 +104,21 @@ function createWindow () {
 
   timer = new Timer(monitor, mainWindow!);
   tray = new TempusTray(mainWindow!, app, timer, setQuit);
-
-  store.onDidChange('timeLogsToSync', (n) => {
-    mainWindow?.webContents.send('sync-logs', n);
-  });
 }
 
 async function registerListeners () {
-  cron.schedule('* * * * *', () => {
-    const idleTime = store.get('idleCounter', 0);
-    console.log(idleTime);
-  });
+  // cron.schedule('* * * * *', () => {
+  //   const idleTime = store.get('idleCounter', 0);
+  // });
 
   cron.schedule('0 0 * * *', () => {
-    timer?.stop();
+    timer?.stop(false);
     store.set('tickCounter', 0);
+    cleanUp();
+  });
+
+  cron.schedule('*/10 * * * *', () => {
+    mainWindow?.webContents.send('sync-logs', true);
   });
 
   /**

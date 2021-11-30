@@ -27,9 +27,10 @@ class Timer {
     console.log('Checking normally');
     const startTime = store.get('lastSyncTimestamp', 0);
     const endTime = parseInt(`${Date.now() / 1000}`, 10);
-    
-    const activityLog = await this.analyzer(startTime, endTime);
-    saveLog(activityLog);
+
+    const diff = endTime - startTime;
+
+    if (diff >= 540) this.analyzer(startTime, endTime);
   }
 
   analyzeRemnantActivity = async (reset = false) => {
@@ -38,10 +39,8 @@ class Timer {
     const endTime = store.get('lastActivityTimestamp', 0);
 
     const diff = endTime - startTime;
-    console.log(diff);
     if (diff > 0) {
-      const activityLog = await this.analyzer(startTime, endTime, reset);
-      saveLog(activityLog);
+      this.analyzer(startTime, endTime, reset);
     }
   }
   
@@ -75,8 +74,7 @@ class Timer {
       },
       screenshot,
     };
-
-    return payload;
+    saveLog(payload);
   }
 
   start(): void {

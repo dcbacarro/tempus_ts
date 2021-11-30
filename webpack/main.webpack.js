@@ -5,5 +5,6 @@ module.exports = {
   entry: './electron/main.ts',
   module: {
     rules: require('./rules.webpack'),
-  }
+  },
+  externals: ['better-sqlite3']
 }

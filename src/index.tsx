@@ -14,24 +14,17 @@ window.Main.on('try-resume', (employee: string) => {
   tryResume(employee);
 });
 
-window.Main.on('sync-logs', async (n: any[]) => {
-  const logs = n ?? [];
-  const synchedIndexes: number[] = [];
-  for (let i = 0; i < logs.length; i++) {
-    const log = logs[i];
-    const status = await syncLog(log);
+window.Main.on('sync-logs', async (_: any) => {
+  let log = window.Main.getLogsToSync();
+  while (log) {
+    const activity = JSON.parse(log.activity);
+    const status = await syncLog(activity);
 
-    if (status) synchedIndexes.push(i);
-    else break;
-  }
-
-  if (synchedIndexes.length > 0) {
-    const reduced = logs.reduce((acc, cur, i) => {
-      if (!synchedIndexes.includes(i)) acc.push(cur);
-      return acc;
-    }, []);
-
-    window.Main.updateToSyncLogs(reduced);
+    if (status) {
+      window.Main.updateSynchedLog(log.id);
+      log = window.Main.getLogsToSync();
+    } else 
+      break;
   }
 });
 

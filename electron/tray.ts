@@ -1,6 +1,6 @@
 import { app, App, BrowserWindow, dialog, Menu, MenuItem, MenuItemConstructorOptions, NativeImage, nativeImage, Tray } from "electron";
 import path from 'path';
-import store from "./store";
+import store, { cleanDB } from "./store";
 import Timer from "./timer";
 
 const RESOURCES_PATH = app.isPackaged
@@ -102,6 +102,7 @@ class TempusTray {
               mainWindow?.webContents.send('logout', true);
               that.tray.setTitle('');
               store.clear();
+              cleanDB();
             } else {
               if (timerRunning) that.timer.start();
             }

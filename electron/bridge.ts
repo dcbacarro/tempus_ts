@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import store from './store'
+import store, { getLogs, setSynched } from './store'
 
 export const api = {
   /**
@@ -39,8 +39,16 @@ export const api = {
     store.set('tickCounter', time);
   },
 
-  updateToSyncLogs: (logs: any[]) => {
-    store.set('timeLogsToSync', logs);
+  getLogsToSync: () => {
+    return getLogs();
+  },
+
+  updateSynchedLog: (id: number) => {
+    setSynched(id);
+  },
+
+  setSyncStatus: (status: boolean) => {
+    store.set('isSyncing', status);
   },
   
   getTimerStatus: () => {
