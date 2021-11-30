@@ -4,6 +4,7 @@ import { useSnackbar } from 'react-simple-snackbar';
 import logo from '../../assets/icon.png';
 import { getEmployee, requestLogin } from "../utils/api";
 import Loading from "./Loading";
+import packageJson from '../../package.json';
 
 const Login = () => {
   const [usr, setUser] = useState('');
@@ -68,7 +69,7 @@ const Login = () => {
       <button type="submit" className="signin">
         Sign In
       </button>
-      <span className="version">Version 1.0.0-11.28.1</span>
+      <span className="version">Version { packageJson.version }</span>
       {loading && <Loading />}
     </form>
   );
