@@ -1,6 +1,7 @@
 import { app, App, BrowserWindow, dialog, Menu, MenuItem, MenuItemConstructorOptions, NativeImage, nativeImage, Tray } from "electron";
 import path from 'path';
-import store, { cleanDB } from "./store";
+import { cleanDB } from "./main";
+import store from "./store";
 import Timer from "./timer";
 
 const RESOURCES_PATH = app.isPackaged
