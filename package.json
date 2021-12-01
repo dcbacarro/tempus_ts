@@ -1,7 +1,7 @@
 {
   "name": "tempus",
   "author": "Darrell Bacarro <dcbacarro@codedisruptors.com>",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CDI Time Tracker",
   "main": "./.webpack/main/index.js",
   "scripts": {
