@@ -15,16 +15,18 @@ window.Main.on('try-resume', (employee: string) => {
 });
 
 window.Main.on('sync-logs', async (_: any) => {
-  let log = window.Main.getLogsToSync();
-  while (log) {
-    const activity = JSON.parse(log.activity);
-    const status = await syncLog(activity);
+  const logs = window.Main.getLogsToSync();
 
+  for (let i = 0; i < logs.length; i++) {
+    const log = logs[i];
+    const activity = log.activity;
+
+    const status = await syncLog(activity);
     if (status) {
       window.Main.updateSynchedLog(log.id);
-      log = window.Main.getLogsToSync();
-    } else 
+    } else {
       break;
+    }
   }
 });
 

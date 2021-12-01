@@ -6,8 +6,6 @@ import { toTime } from '../src/utils/helpers';
 import cron from 'node-cron';
 import path from 'path';
 
-import DB from 'better-sqlite3';
-
 let mainWindow: BrowserWindow | null
 let tray: TempusTray | null;
 let timer: Timer | null;
@@ -15,46 +13,6 @@ let isQuitting = false;
 
 declare const APP_WEBPACK_ENTRY: string
 declare const APP_PRELOAD_WEBPACK_ENTRY: string
-
-const db = new DB(path.join(app.getPath('userData'), 'db.sqlite'));
-
-db.exec(`CREATE TABLE IF NOT EXISTS time_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  activity TEXT,
-  synched INTEGER DEFAULT 0
-);`);
-
-export const saveLog = (log: any) => {
-  const logStr = JSON.stringify(log);
-  const insert = db.prepare('INSERT INTO time_logs (activity) VALUES (@log)');
-  insert.run({ log: logStr });
-};
-
-export const getLogs = () => {
-  const stmt = db.prepare('SELECT * FROM time_logs WHERE synched = 0');
-  return stmt.get();
-};
-
-export const setSynched = (id: number) => {
-  const stmt = db.prepare('UPDATE time_logs SET synched = 1 WHERE id = @id');
-  const info = stmt.run({ id });
-
-  return info.changes;
-};
-
-export const cleanUp = () => {
-  const stmt = db.prepare('DELETE FROM time_logs WHERE synched = 1');
-  const info = stmt.run();
-
-  return info.changes;
-};
-
-export const cleanDB = () => {
-  const stmt = db.prepare('DELETE FROM time_logs');
-  const info = stmt.run();
-
-  return info.changes;
-}
 
 const monitor = async (checkIdle = true) => {
   const time = store.get('tickCounter', 0) + (checkIdle ? 1 : 0);
@@ -156,7 +114,6 @@ async function registerListeners () {
   cron.schedule('0 0 * * *', () => {
     timer?.stop(false);
     store.set('tickCounter', 0);
-    cleanUp();
   });
 
   cron.schedule('*/10 * * * *', () => {

@@ -3,8 +3,7 @@ import dayjs from "dayjs";
 import { BrowserWindow } from "electron";
 import AdjustingInterval from "../src/utils/adjusting_interval";
 import { takeScreenshot } from "../src/utils/helpers";
-import { saveLog } from "./main";
-import store from "./store";
+import store, { saveLog } from "./store";
 
 class Timer {
   timeout: AdjustingInterval;

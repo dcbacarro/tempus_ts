@@ -43,7 +43,7 @@ export const api = {
     return getLogs();
   },
 
-  updateSynchedLog: (id: number) => {
+  updateSynchedLog: (id: string) => {
     setSynched(id);
   },
 
