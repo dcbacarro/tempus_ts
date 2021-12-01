@@ -76,8 +76,7 @@ export const saveLog = (log: any) => {
   };
 
   const waitlist = store.get('waitList', []);
-  waitlist.push(payload);
-  store.set('waitList', waitlist);
+  store.set('waitList', [...waitlist, payload]);
 };
 
 export const getLogs = () => {
@@ -90,9 +89,8 @@ export const getLogs = () => {
   waitlistIds.forEach(id => {
     if (!toSyncIds.includes(id)) {
       toSync.push(waitlist.find(log => log.id === id));
-    } else {
-      waitlist.splice(waitlist.findIndex(log => log.id === id), 1);
     }
+    waitlist.splice(waitlist.findIndex(log => log.id === id), 1);
   });
 
   store.set('timeLogsToSync', toSync);
