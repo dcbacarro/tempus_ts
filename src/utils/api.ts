@@ -158,7 +158,7 @@ export const updateTimesheet = async (timesheet: string, activity: any, screensh
     });
   }
 
-  return resp.status === 200;
+  return resp.status === 200 || resp.status === 417;
 };
 
 const syncScreenshot = async (name: string, filename: string, screenshot: string) => {
