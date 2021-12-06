@@ -57,7 +57,7 @@
     "@typescript-eslint/parser": "4.27.0",
     "babel-loader": "8.2.2",
     "cross-env": "7.0.3",
-    "electron": "^15.0.0",
+    "electron": "^13.6.2",
     "electron-nightly": "^18.0.0-nightly.20211130",
     "eslint": "7.29.0",
     "eslint-config-prettier": "8.3.0",
@@ -115,7 +115,9 @@
                   }
                 }
               ]
-            }
+            },
+            "port": 3001,
+            "loggerPort": 9001
           }
         ]
       ],

@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from 'react-simple-snackbar';
 import logo from '../../assets/icon.png';
-import { getEmployee, requestLogin } from "../utils/api";
+import { getEmployee, getTimesheetForDate, requestLogin } from "../utils/api";
 import Loading from "./Loading";
 import packageJson from '../../package.json';
+import dayjs from "dayjs";
 
 const Login = () => {
   const [usr, setUser] = useState('');
@@ -15,9 +16,17 @@ const Login = () => {
 
   useEffect(() => {
     const check = async () => {
-      const status = await getEmployee();
-      setLoading(false);
-      if (status) navigate('tracker');
+      const employee = await getEmployee();
+      if (employee) {
+        const now = dayjs().format('YYYY-MM-DD');
+        const info = await getTimesheetForDate(employee, now);
+
+        window.Main.setResumeData(info?.timesheet ?? '', info?.time ?? 0);
+        setLoading(false);
+        navigate('tracker');
+      } else {
+        setLoading(false);
+      }
     };
 
     check();

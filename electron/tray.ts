@@ -99,6 +99,8 @@ class TempusTray {
             });
 
             if (response === 1) {
+              that.timer.analyzeActivity();
+              mainWindow?.webContents.send('sync-logs', true);
               mainWindow?.webContents.send('logout', true);
               that.tray.setTitle('');
               store.clear();

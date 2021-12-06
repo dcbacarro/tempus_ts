@@ -31,7 +31,7 @@ export const logout = async () => {
   await fetch(`${BASE_URL}/api/method/logout`);
 };
 
-export const getEmployee = async () => {
+export const getEmployee = async (): Promise<string | null> => {
   try {
     const resp = await fetch(`${BASE_URL}/api/resource/Employee?fields=["*"]`);
     const res = await resp.json();
@@ -43,10 +43,10 @@ export const getEmployee = async () => {
       window.Main.setLoginStatus(false);
     }
 
-    return true;
-  } catch (e) {
-    return false;
-  }
+    return res.data[0].name;
+  } catch (e) {}
+
+  return null;
 };
 
 type GetTimesheetInfo = {

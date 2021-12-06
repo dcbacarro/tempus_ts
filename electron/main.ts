@@ -30,8 +30,6 @@ const monitor = async (checkIdle = true) => {
     } else {
       store.set('idleCounter', idleTime);
     }
-
-    if (time % 600 === 0) timer?.analyzeActivity();
   }
 
   const t = toTime(time);
@@ -43,11 +41,11 @@ const monitor = async (checkIdle = true) => {
   mainWindow?.webContents.send('tick', t);
 }
 
-const tryResume = () => {
-  const employee = store.get('userData', null);
-  if (employee)
-    mainWindow?.webContents.send('try-resume', employee.name);
-}
+// const tryResume = () => {
+//   const employee = store.get('userData', null);
+//   if (employee)
+//     mainWindow?.webContents.send('try-resume', employee.name);
+// }
 
 const assetsPath =
   process.env.NODE_ENV === 'production'
@@ -63,6 +61,9 @@ function createWindow () {
     icon: path.join(assetsPath, 'assets', 'icon.png'),
     width: 300,
     height: 310,
+    maxWidth: 300,
+    maxHeight: 310,
+    maximizable: false,
     backgroundColor: '#191622',
     webPreferences: {
       devTools: process.env.NODE_ENV !== 'production',
@@ -73,14 +74,11 @@ function createWindow () {
     }
   })
 
-  mainWindow.loadURL(APP_WEBPACK_ENTRY).then(async () => {
-    await timer?.analyzeRemnantActivity();
-    tryResume();
-  });
+  mainWindow.loadURL(APP_WEBPACK_ENTRY);
 
   mainWindow.on('closed', () => {
     mainWindow = null
-  })
+  });
 
   mainWindow.on('show', async () => {
     tray?.refresh();
@@ -117,12 +115,17 @@ async function registerListeners () {
   });
 
   cron.schedule('*/10 * * * *', () => {
+    timer?.analyzeActivity();
     mainWindow?.webContents.send('sync-logs', true);
   });
 
   /**
    * This comes from bridge integration, check bridge.ts
    */
+  ipcMain.on('sync-remnant', (_, __) => {
+    timer?.analyzeRemnantActivity();
+  });
+
   ipcMain.on('start-timer', (_, __) => {
     timer?.start();
   });
