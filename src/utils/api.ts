@@ -21,7 +21,14 @@ export const requestLogin = async (username: string, password: string) => {
 
   if (success) {
     window.Main.setLoginStatus(true);
-    await getEmployee();
+    const employee = await getEmployee();
+
+    if (employee) {
+      const now = dayjs().format('YYYY-MM-DD');
+      const info = await getTimesheetForDate(employee, now);
+
+      window.Main.setResumeData(info?.timesheet ?? '', info?.time ?? 0);
+    }
   }
 
   return success;
