@@ -30,7 +30,7 @@ class Timer {
 
     const diff = endTime - startTime;
 
-    if (diff >= 540) this.analyzer(startTime, endTime);
+    if (diff >= 60) this.analyzer(startTime, endTime);
   }
 
   analyzeRemnantActivity = async (reset = false) => {

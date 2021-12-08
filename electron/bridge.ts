@@ -39,6 +39,14 @@ export const api = {
     store.set('tickCounter', time);
   },
 
+  getToken: () => {
+    return store.get('token', '');
+  },
+
+  setToken: (token: string) => {
+    return store.set('token', token);
+  },
+
   getLogsToSync: () => {
     return getLogs();
   },

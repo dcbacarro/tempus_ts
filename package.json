@@ -15,6 +15,7 @@
   "keywords": [],
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.24.0",
     "dayjs": "^1.10.7",
     "driftless": "^2.0.3",
     "electron-main-fetch": "^1.0.0",
@@ -35,14 +36,14 @@
     "@babel/preset-env": "7.14.5",
     "@babel/preset-react": "7.14.5",
     "@babel/preset-typescript": "7.14.5",
-    "@electron-forge/cli": "6.0.0-beta.57",
-    "@electron-forge/maker-deb": "6.0.0-beta.57",
+    "@electron-forge/cli": "^6.0.0-beta.61",
+    "@electron-forge/maker-deb": "^6.0.0-beta.61",
     "@electron-forge/maker-dmg": "^6.0.0-beta.61",
     "@electron-forge/maker-rpm": "6.0.0-beta.57",
-    "@electron-forge/maker-squirrel": "6.0.0-beta.57",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
     "@electron-forge/maker-wix": "^6.0.0-beta.61",
     "@electron-forge/maker-zip": "6.0.0-beta.57",
-    "@electron-forge/plugin-webpack": "6.0.0-beta.57",
+    "@electron-forge/plugin-webpack": "^6.0.0-beta.61",
     "@electron-forge/publisher-github": "^6.0.0-beta.61",
     "@marshallofsound/webpack-asset-relocator-loader": "0.5.0",
     "@testing-library/jest-dom": "5.14.1",
@@ -53,12 +54,12 @@
     "@types/react": "17.0.11",
     "@types/react-dom": "17.0.8",
     "@types/styled-components": "5.1.10",
+    "@types/tough-cookie": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "4.27.0",
     "@typescript-eslint/parser": "4.27.0",
     "babel-loader": "8.2.2",
     "cross-env": "7.0.3",
-    "electron": "^13.6.2",
-    "electron-nightly": "^18.0.0-nightly.20211130",
+    "electron": "16.0.2",
     "eslint": "7.29.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-config-standard": "16.0.3",
@@ -103,6 +104,7 @@
           "@electron-forge/plugin-webpack",
           {
             "mainConfig": "./webpack/main.webpack.js",
+            "devContentSecurityPolicy": "connect-src 'self' https://erp.codedisruptors.com 'unsafe-eval'",
             "renderer": {
               "config": "./webpack/renderer.webpack.js",
               "entryPoints": [
@@ -115,9 +117,7 @@
                   }
                 }
               ]
-            },
-            "port": 3001,
-            "loggerPort": 9001
+            }
           }
         ]
       ],
@@ -136,7 +136,10 @@
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": {
+            "name": "Tempus",
+            "icon": "assets/icon.png"
+          }
         }
       ]
     }

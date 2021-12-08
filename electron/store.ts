@@ -14,6 +14,7 @@ interface IStore {
   lastSyncTimestamp?: number;
   timeLogsToSync: any[];
   waitList: any[];
+  token?: string;
 }
 
 const schema: Schema<IStore> = {
@@ -64,6 +65,10 @@ const schema: Schema<IStore> = {
   waitList: {
     type: 'array',
     default: [],
+  },
+  token: {
+    type: ['string', 'null'],
+    default: null,
   }
 };
 

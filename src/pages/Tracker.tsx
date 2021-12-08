@@ -5,7 +5,7 @@ import noteIcon from '../../assets/note.svg';
 import { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import Loading from './Loading';
-import { logout } from '../utils/api';
+// import { logout } from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 
 const Tracker = () => {
@@ -29,8 +29,9 @@ const Tracker = () => {
 
     window.Main.on('logout', async () => {
       setFullLoading(true);
-      await logout();
+      // await logout();
       window.Main.triggerEvent('update-tray');
+      window.Main.triggerEvent('is-logged-out');
       setFullLoading(false);
       navigate('/');
     });

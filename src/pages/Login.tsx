@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from 'react-simple-snackbar';
 import logo from '../../assets/icon.png';
-import { getEmployee, getTimesheetForDate, requestLogin } from "../utils/api";
+import { getEmployee, getTimesheetForDate, initToken, requestAuth } from "../utils/api";
 import Loading from "./Loading";
 import packageJson from '../../package.json';
 import dayjs from "dayjs";
@@ -16,12 +16,15 @@ const Login = () => {
 
   useEffect(() => {
     const check = async () => {
+      const token = window.Main.getToken();
+      initToken(token);
       const employee = await getEmployee();
       if (employee) {
         const now = dayjs().format('YYYY-MM-DD');
         const info = await getTimesheetForDate(employee, now);
 
         window.Main.setResumeData(info?.timesheet ?? '', info?.time ?? 0);
+        window.Main.triggerEvent('is-logged-in');
         setLoading(false);
         navigate('tracker');
       } else {
@@ -38,14 +41,15 @@ const Login = () => {
       const rqst = async () => {
         setLoading(true);
         try {
-          const success = await requestLogin(usr, pwd);
+          const success = await requestAuth(usr, pwd);
           setLoading(false);
 
           if (success) {
             navigate('tracker');
+            window.Main.triggerEvent('is-logged-in');
             window.Main.triggerEvent('update-tray');
           } else {
-            openSnackbar('Invalid email or password');
+            openSnackbar('Invalid API Key or Secret');
             setPass('');
           }
         } catch (e) {
@@ -67,13 +71,13 @@ const Login = () => {
         value={usr}
         onChange={(e) => setUser(e.target.value)}
         type="text"
-        placeholder="Email address"
+        placeholder="API Key"
       />
       <input
         value={pwd}
         onChange={(e) => setPass(e.target.value)}
         type="password"
-        placeholder="Password"
+        placeholder="API Secret"
       />
       <button type="submit" className="signin">
         Sign In

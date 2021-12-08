@@ -1,21 +1,27 @@
 /* eslint-disable camelcase */
 
 import dayjs from "dayjs";
+import axios from 'axios';
 
-const BASE_URL = 'https://erp.codedisruptors.com';
+const BASE_URL = "https://erp.codedisruptors.com";
+axios.defaults.baseURL = BASE_URL;
+axios.defaults.headers.common.Accept = 'application/json';
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+// axios.defaults.withCredentials = true;
+
+export const initToken = (token: string | null = null) => {
+  const t = token ?? window.Main.getToken();
+  window.Main.setToken(t);
+  axios.defaults.headers.common.Authorization = `token ${t}`;
+};
 
 export const requestLogin = async (username: string, password: string) => {
-  const resp = await fetch(`${BASE_URL}/api/method/login`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      usr: username,
-      pwd: password,
-    }),
-  });
+  const params = new URLSearchParams();
+  params.append('usr', username);
+  params.append('pwd', password);
+  params.append('device', 'mobile');
+
+  const resp = await axios.post('/api/method/login', params);
 
   const success = resp.status === 200;
 
@@ -34,24 +40,41 @@ export const requestLogin = async (username: string, password: string) => {
   return success;
 };
 
+export const requestAuth = async (key: string, secret: string) => {
+  const token = `${key}:${secret}`;
+  initToken(token);
+  const employee = await getEmployee();
+  if (employee) {
+    window.Main.setLoginStatus(true);
+    const now = dayjs().format('YYYY-MM-DD');
+    const info = await getTimesheetForDate(employee, now);
+
+    window.Main.setResumeData(info?.timesheet ?? '', info?.time ?? 0);
+
+    return true;
+  }
+
+  return false;
+};
+
 export const logout = async () => {
-  await fetch(`${BASE_URL}/api/method/logout`);
+  await axios.get('/api/method/logout');
 };
 
 export const getEmployee = async (): Promise<string | null> => {
   try {
-    const resp = await fetch(`${BASE_URL}/api/resource/Employee?fields=["*"]`);
-    const res = await resp.json();
-
-    if (resp.status === 200) {
-      window.Main.setEmployeeData(res.data[0]);
+    const resp = await axios.get('/api/resource/Employee?fields=["*"]');
+    if (resp?.status === 200) {
+      window.Main.setEmployeeData(resp.data.data[0]);
     } else {
       window.Main.setEmployeeData(null);
       window.Main.setLoginStatus(false);
     }
 
-    return res.data[0].name;
-  } catch (e) {}
+    return resp?.data.data[0].name;
+  } catch (e) {
+    console.log(e);
+  }
 
   return null;
 };
@@ -63,11 +86,11 @@ type GetTimesheetInfo = {
 
 export const getTimesheetForDate = async (employee: string, date: string): Promise<GetTimesheetInfo | null> => {
   try {
-    const resp = await fetch(
-      `${BASE_URL}/api/resource/Timesheet?filters=[["employee","=","${employee}"],["start_date","=","${date}"],["end_date","=","${date}"]]&fields=["name","start_date","end_date","total_hours"]`
+    const resp = await axios.get(
+      `/api/resource/Timesheet?filters=[["employee","=","${employee}"],["start_date","=","${date}"],["end_date","=","${date}"]]&fields=["name","start_date","end_date","total_hours"]`
     );
 
-    const { data }: any = await resp.json();
+    const { data }: any = resp.data;
 
     if (data.length === 1) {
       const { total_hours } = data[0];
@@ -85,9 +108,9 @@ export const getTimesheetForDate = async (employee: string, date: string): Promi
 
 export const getTimesheet = async (name: string) => {
   try {
-    const resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${name}`);
+    const resp = await axios.get(`/api/resource/Timesheet/${name}`);
 
-    const { data } = await resp.json();
+    const { data } = resp.data;
 
     return data;
   } catch (e) {
@@ -113,18 +136,11 @@ export const initTimesheet = async (employee: string, date: string, activity: an
     }],
   }
 
-  const resp = await fetch(`${BASE_URL}/api/resource/Timesheet`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(initPayload),
-  });
+  const resp = await axios.post(`/api/resource/Timesheet`, initPayload);
 
   if (resp.status === 200) {
-    const data = await resp.json();
-    const timesheet = data.data.name;
+    const { data } = resp.data;
+    const timesheet = data.name;
 
     const status = await updateTimesheet(timesheet, activity, screenshot);
     return status;
@@ -140,28 +156,14 @@ export const updateTimesheet = async (timesheet: string, activity: any, screensh
   const file_url = await syncScreenshot(timesheet, activity.from_time, screenshot);
   activity.screenshot = file_url;
 
-  let resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
-    method: 'PUT',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      time_logs: [...time_logs, activity],
-    }),
+  let resp = await axios.put(`/api/resource/Timesheet/${timesheet}`, {
+    time_logs: [...time_logs, activity],
   });
 
   if (resp.status === 417) {
     activity.from_time = dayjs(activity.from_time).add(1, 'second').format('YYYY-MM-DD HH:mm:ss');
-    resp = await fetch(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
-      method: 'PUT',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        time_logs: [...time_logs, activity],
-      }),
+    resp = await axios.put(`${BASE_URL}/api/resource/Timesheet/${timesheet}`, {
+      time_logs: [...time_logs, activity],
     });
   }
 
@@ -170,25 +172,19 @@ export const updateTimesheet = async (timesheet: string, activity: any, screensh
 
 const syncScreenshot = async (name: string, filename: string, screenshot: string) => {
   const payload = {
-    cmd: 'uploadfile',
+    // cmd: 'uploadfile',
     doctype: 'Timesheet',
     docname: name,
     filename: `${filename}.png`,
     filedata: screenshot,
-    from_form: 1,
+    decode_base64: 1
+    // from_form: 1,
   };
 
   try {
-    const resp = await fetch(`${BASE_URL}/api/method/uploadfile`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const resp = await axios.post(`${BASE_URL}/api/method/frappe.client.attach_file`, payload);
 
-    const res = await resp.json();
+    const res = resp.data;
 
     return res.message.file_url;    
   } catch (e) {

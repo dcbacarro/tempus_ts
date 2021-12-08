@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, powerMonitor } from 'electron';
+/* eslint-disable node/no-callback-literal */
+import { app, BrowserWindow, ipcMain, powerMonitor, session } from 'electron';
 import Timer from './timer';
 import store from './store';
 import TempusTray from './tray';
@@ -13,6 +14,10 @@ let isQuitting = false;
 
 declare const APP_WEBPACK_ENTRY: string
 declare const APP_PRELOAD_WEBPACK_ENTRY: string
+
+function delay(ms: number) {
+  return new Promise( resolve => setTimeout(resolve, ms) );
+}
 
 const monitor = async (checkIdle = true) => {
   const time = store.get('tickCounter', 0) + (checkIdle ? 1 : 0);
@@ -41,6 +46,19 @@ const monitor = async (checkIdle = true) => {
   mainWindow?.webContents.send('tick', t);
 }
 
+const midnightTask =  cron.schedule('0 0 * * *', () => {
+  timer?.stop(false);
+  store.set('tickCounter', 0);
+}, { scheduled: false });
+
+const syncTask = cron.schedule('*/10 * * * *', async () => {
+  if (store.get('isTimerRunning', false)) {
+    await timer?.analyzeActivity();
+    await delay(3000);
+  }
+  mainWindow?.webContents.send('sync-logs', true);
+}, { scheduled: false });
+
 // const tryResume = () => {
 //   const employee = store.get('userData', null);
 //   if (employee)
@@ -68,12 +86,12 @@ function createWindow () {
     webPreferences: {
       devTools: process.env.NODE_ENV !== 'production',
       nodeIntegration: true,
-      webSecurity: false,
       contextIsolation: true,
+      webSecurity: false,
       preload: APP_PRELOAD_WEBPACK_ENTRY
     }
   })
-
+  
   mainWindow.loadURL(APP_WEBPACK_ENTRY);
 
   mainWindow.on('closed', () => {
@@ -82,7 +100,7 @@ function createWindow () {
 
   mainWindow.on('show', async () => {
     tray?.refresh();
-    if (process.env.NODE_ENV !== 'production')
+    // if (process.env.NODE_ENV !== 'production')
       mainWindow?.webContents.openDevTools({ mode: 'detach' });
   });
 
@@ -108,20 +126,36 @@ async function registerListeners () {
   // cron.schedule('* * * * *', () => {
   //   const idleTime = store.get('idleCounter', 0);
   // });
+  // const filter = { urls: ['*://*.codedisruptors.com/*'] };
 
-  cron.schedule('0 0 * * *', () => {
-    timer?.stop(false);
-    store.set('tickCounter', 0);
-  });
+  // session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+  //   if (details != null && details.responseHeaders != null) {
+  //     details.responseHeaders['Access-Control-Allow-Origin'] = [ 'http://localhost:3000' ];
+  //     callback({ responseHeaders: details.responseHeaders });
+  //   }
+  // });
+  const now = (new Date()).getMinutes();
+  const r = now % 10;
+  const diff = 10 - r;
 
-  cron.schedule('*/10 * * * *', () => {
-    timer?.analyzeActivity();
-    mainWindow?.webContents.send('sync-logs', true);
-  });
+  if (diff >= 2) mainWindow?.webContents.send('sync-logs', true);
+
+  session.defaultSession.clearAuthCache();
+  session.defaultSession.clearStorageData();
 
   /**
    * This comes from bridge integration, check bridge.ts
    */
+  ipcMain.on('is-logged-in', (_, __) => {
+    midnightTask.start();
+    syncTask.start();
+  });
+
+  ipcMain.on('is-logged-out', (_, __) => {
+    midnightTask.stop();
+    syncTask.stop();
+  });
+
   ipcMain.on('sync-remnant', (_, __) => {
     timer?.analyzeRemnantActivity();
   });
